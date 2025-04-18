@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import DashboardSidebar from '@/components/DashboardSidebar';
@@ -31,8 +30,6 @@ const Dashboard = () => {
     if (data.length > 0) {
       setStockData(data);
       setHasData(true);
-      
-      // Log the first item to help debug the data structure
       console.log("Sample data:", data[0]);
     } else {
       toast({
@@ -43,58 +40,40 @@ const Dashboard = () => {
     }
   };
 
-  // Sample data in case no data is loaded
+  // Example historical stock data
   const sampleData = [
-    { date: 'Jan', price: 100, volume: 1200, return: 5 },
-    { date: 'Feb', price: 120, volume: 1400, return: 7 },
-    { date: 'Mar', price: 110, volume: 1100, return: -2 },
-    { date: 'Apr', price: 130, volume: 1500, return: 8 },
-    { date: 'May', price: 140, volume: 1700, return: 6 },
+    { Date: "1999-01-22", "Adj Close": 0.037615169, Close: 0.041016001, High: 0.048827998, Low: 0.038802002, Open: 0.043749999, Volume: 2714688000 },
+    { Date: "1999-01-25", "Adj Close": 0.041555878, Close: 0.045313001, High: 0.045832999, Low: 0.041016001, Open: 0.044271, Volume: 510480000 },
+    { Date: "1999-01-26", "Adj Close": 0.038331419, Close: 0.041797001, High: 0.046744999, Low: 0.041145999, Open: 0.045832999, Volume: 343200000 },
+    { Date: "1999-01-27", "Adj Close": 0.03821218, Close: 0.041666999, High: 0.042969, Low: 0.039583001, Open: 0.041926999, Volume: 244368000 },
+    { Date: "1999-01-28", "Adj Close": 0.038092051, Close: 0.041536, High: 0.041926999, Low: 0.041276, Open: 0.041666999, Volume: 227520000 },
+    { Date: "1999-01-29", "Adj Close": 0.036300983, Close: 0.039583001, High: 0.041666999, Low: 0.039583001, Open: 0.041536, Volume: 244032000 },
+    { Date: "1999-02-01", "Adj Close": 0.037018139, Close: 0.040364999, High: 0.040624999, Low: 0.039583001, Open: 0.039583001, Volume: 154704000 },
+    { Date: "1999-02-02", "Adj Close": 0.034152262, Close: 0.037239999, High: 0.040624999, Low: 0.036068, Open: 0.039583001, Volume: 264096000 },
+    { Date: "1999-02-03", "Adj Close": 0.034868501, Close: 0.038020998, High: 0.038541999, Low: 0.036458001, Open: 0.036719002, Volume: 75120000 },
+    { Date: "1999-02-04", "Adj Close": 0.036778785, Close: 0.040104002, High: 0.041145999, Low: 0.038020998, Open: 0.038541999, Volume: 181920000 }
   ];
   
   const samplePortfolio = [
-    { name: 'AAPL', value: 30 },
-    { name: 'MSFT', value: 25 },
-    { name: 'AMZN', value: 20 },
-    { name: 'GOOGL', value: 15 },
-    { name: 'FB', value: 10 },
+    { name: 'High', value: 30 },
+    { name: 'Low', value: 25 },
+    { name: 'Open', value: 23 },
+    { name: 'Close', value: 22 },
   ];
 
   // Helper function to extract data from uploaded stock data or use sample data
   const prepareChartData = () => {
-    if (hasData && stockData.length > 0) {
-      // Get all keys from the first data item to use as potential data points
-      const keys = Object.keys(stockData[0]);
-      
-      // Find potential date/time column (often the first column)
-      const dateKey = keys.find(key => 
-        key.toLowerCase().includes('date') || 
-        key.toLowerCase().includes('time') || 
-        key.toLowerCase().includes('period')
-      ) || keys[0];
-      
-      // Find numeric columns for values
-      const numericKeys = keys.filter(key => 
-        typeof stockData[0][key] === 'number' || 
-        !isNaN(Number(stockData[0][key]))
-      );
-      
-      return {
-        data: stockData,
-        dateKey,
-        numericKeys
-      };
-    }
+    const dataToUse = hasData && stockData.length > 0 ? stockData : sampleData;
     
     return {
-      data: sampleData,
-      dateKey: 'date',
-      numericKeys: ['price', 'volume', 'return']
+      data: dataToUse,
+      dateKey: 'Date',
+      numericKeys: ['High', 'Low', 'Open', 'Close', 'Volume', 'Adj Close']
     };
   };
 
   const { data, dateKey, numericKeys } = prepareChartData();
-  
+
   // Extract stock symbols and their weights if available
   const getPortfolioData = () => {
     if (hasData && stockData.length > 0) {
@@ -123,7 +102,7 @@ const Dashboard = () => {
     return samplePortfolio;
   };
 
-  const portfolioData = getPortfolioData();
+  const portfolioData = hasData && stockData.length > 0 ? getPortfolioData() : samplePortfolio;
 
   return (
     <div className="flex min-h-screen bg-slate-50">
