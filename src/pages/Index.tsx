@@ -40,7 +40,7 @@ const Dashboard = () => {
     }
   };
 
-  // Example historical stock data
+  // Example historical stock data for NVIDIA in 2025
   const sampleData = [
     { Date: "2024-12-20", "Adj Close": 134.6999969, Close: 134.6999969, High: 135.2799988, Low: 128.2200012, Open: 129.8099976, Volume: 306528600 },
     { Date: "2024-12-23", "Adj Close": 139.6699982, Close: 139.6699982, High: 139.7899933, Low: 135.1199951, Open: 136.2799988, Volume: 176053500 },
@@ -61,7 +61,13 @@ const Dashboard = () => {
     { name: 'Close', value: 149.43 }
   ];
 
-  // Helper function to extract data from uploaded stock data or use sample data
+  const stockContext = {
+    symbol: 'NVDA',
+    company: 'NVIDIA Corporation',
+    timeframe: '2024-2025',
+    description: 'Sample stock performance data for NVIDIA showing price and volume trends'
+  };
+
   const prepareChartData = () => {
     const dataToUse = hasData && stockData.length > 0 ? stockData : sampleData;
     
@@ -74,10 +80,8 @@ const Dashboard = () => {
 
   const { data, dateKey, numericKeys } = prepareChartData();
 
-  // Extract stock symbols and their weights if available
   const getPortfolioData = () => {
     if (hasData && stockData.length > 0) {
-      // Try to find columns that might contain stock symbols and weights
       const keys = Object.keys(stockData[0]);
       const symbolKey = keys.find(key => 
         key.toLowerCase().includes('symbol') || 
