@@ -9,7 +9,7 @@ import DonutChart from '@/components/charts/DonutChart';
 import AreaChart from '@/components/charts/AreaChart';
 import GaugeChart from '@/components/charts/GaugeChart';
 import StatsCard from '@/components/StatsCard';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BarChart2, 
   TrendingUp, 
