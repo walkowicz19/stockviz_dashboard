@@ -42,23 +42,23 @@ const Dashboard = () => {
 
   // Example historical stock data
   const sampleData = [
-    { Date: "1999-01-22", "Adj Close": 0.037615169, Close: 0.041016001, High: 0.048827998, Low: 0.038802002, Open: 0.043749999, Volume: 2714688000 },
-    { Date: "1999-01-25", "Adj Close": 0.041555878, Close: 0.045313001, High: 0.045832999, Low: 0.041016001, Open: 0.044271, Volume: 510480000 },
-    { Date: "1999-01-26", "Adj Close": 0.038331419, Close: 0.041797001, High: 0.046744999, Low: 0.041145999, Open: 0.045832999, Volume: 343200000 },
-    { Date: "1999-01-27", "Adj Close": 0.03821218, Close: 0.041666999, High: 0.042969, Low: 0.039583001, Open: 0.041926999, Volume: 244368000 },
-    { Date: "1999-01-28", "Adj Close": 0.038092051, Close: 0.041536, High: 0.041926999, Low: 0.041276, Open: 0.041666999, Volume: 227520000 },
-    { Date: "1999-01-29", "Adj Close": 0.036300983, Close: 0.039583001, High: 0.041666999, Low: 0.039583001, Open: 0.041536, Volume: 244032000 },
-    { Date: "1999-02-01", "Adj Close": 0.037018139, Close: 0.040364999, High: 0.040624999, Low: 0.039583001, Open: 0.039583001, Volume: 154704000 },
-    { Date: "1999-02-02", "Adj Close": 0.034152262, Close: 0.037239999, High: 0.040624999, Low: 0.036068, Open: 0.039583001, Volume: 264096000 },
-    { Date: "1999-02-03", "Adj Close": 0.034868501, Close: 0.038020998, High: 0.038541999, Low: 0.036458001, Open: 0.036719002, Volume: 75120000 },
-    { Date: "1999-02-04", "Adj Close": 0.036778785, Close: 0.040104002, High: 0.041145999, Low: 0.038020998, Open: 0.038541999, Volume: 181920000 }
+    { Date: "2024-12-20", "Adj Close": 134.6999969, Close: 134.6999969, High: 135.2799988, Low: 128.2200012, Open: 129.8099976, Volume: 306528600 },
+    { Date: "2024-12-23", "Adj Close": 139.6699982, Close: 139.6699982, High: 139.7899933, Low: 135.1199951, Open: 136.2799988, Volume: 176053500 },
+    { Date: "2024-12-24", "Adj Close": 140.2200012, Close: 140.2200012, High: 141.8999939, Low: 138.6499939, Open: 140, Volume: 105157000 },
+    { Date: "2024-12-26", "Adj Close": 139.9299927, Close: 139.9299927, High: 140.8500061, Low: 137.7299957, Open: 139.6999969, Volume: 116205600 },
+    { Date: "2024-12-27", "Adj Close": 137.0099945, Close: 137.0099945, High: 139.0200043, Low: 134.7100067, Open: 138.5500031, Volume: 170582600 },
+    { Date: "2024-12-30", "Adj Close": 137.4900055, Close: 137.4900055, High: 140.2700043, Low: 134.0200043, Open: 134.8300018, Volume: 167734700 },
+    { Date: "2024-12-31", "Adj Close": 134.2899933, Close: 134.2899933, High: 138.0700073, Low: 133.8300018, Open: 138.0299988, Volume: 155659200 },
+    { Date: "2025-01-02", "Adj Close": 138.3099976, Close: 138.3099976, High: 138.8800049, Low: 134.6300049, Open: 136, Volume: 198247200 },
+    { Date: "2025-01-03", "Adj Close": 144.4700012, Close: 144.4700012, High: 144.8999939, Low: 139.7299957, Open: 140.0099945, Volume: 229322500 },
+    { Date: "2025-01-06", "Adj Close": 149.4299927, Close: 149.4299927, High: 152.1600037, Low: 147.8200073, Open: 148.5899963, Volume: 265377400 }
   ];
   
   const samplePortfolio = [
-    { name: 'High', value: 30 },
-    { name: 'Low', value: 25 },
-    { name: 'Open', value: 23 },
-    { name: 'Close', value: 22 },
+    { name: 'High', value: 152.16 },
+    { name: 'Low', value: 128.22 },
+    { name: 'Open', value: 129.81 },
+    { name: 'Close', value: 149.43 }
   ];
 
   // Helper function to extract data from uploaded stock data or use sample data
