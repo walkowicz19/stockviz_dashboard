@@ -16,7 +16,7 @@ const DashboardHeader = ({
         </Button>
         <div className="flex items-center gap-2">
           <div className="rounded-md bg-blue-500 p-1">
-            <div className="h-6 w-6 text-white font-semibold flex items-center justify-center">S</div>
+            <div className="h-6 w-6 text-white font-semibold flex items-center justify-center">N</div>
           </div>
           <h1 className="text-lg font-semibold">NVIDIA Stock Data 2025</h1>
         </div>
