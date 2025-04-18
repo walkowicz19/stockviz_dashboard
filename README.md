@@ -4,7 +4,7 @@
 
 **StockViz** is an intuitive web platform for visualizing and analyzing **stock data** for companies from uploaded **CSV or Excel** files.
 
-                                                            ✨ Key Features
+                                                      ✨ Key Features
 
 📤 **Data Import**
 
