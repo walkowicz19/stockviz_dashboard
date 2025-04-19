@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, Menu, MessageSquare, Pencil } from 'lucide-react';
@@ -15,7 +14,8 @@ const DashboardHeader = ({
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("NVIDIA");
 
-  const handleNameChange = (newName: string) => {
+  const handleNameChange = (e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    const newName = (e.target as HTMLInputElement).value;
     setName(newName);
     setIsEditing(false);
   };
@@ -38,10 +38,10 @@ const DashboardHeader = ({
                 className="h-8 w-32"
                 defaultValue={name}
                 autoFocus
-                onBlur={(e) => handleNameChange(e.target.value)}
+                onBlur={handleNameChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    handleNameChange(e.target.value);
+                    handleNameChange(e);
                   }
                 }}
               />
