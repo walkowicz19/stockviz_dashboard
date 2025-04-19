@@ -8,7 +8,7 @@ import DonutChart from '@/components/charts/DonutChart';
 import AreaChart from '@/components/charts/AreaChart';
 import GaugeChart from '@/components/charts/GaugeChart';
 import StatsCard from '@/components/StatsCard';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/sonner';
 import { 
   BarChart2, 
   TrendingUp, 
@@ -24,23 +24,47 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stockData, setStockData] = useState<StockData[]>([]);
   const [hasData, setHasData] = useState(false);
-  const { toast } = useToast();
 
   const handleDataLoaded = (data: any[]) => {
     if (data.length > 0) {
       setStockData(data);
       setHasData(true);
       console.log("Sample data:", data[0]);
+      toast.success("Data loaded successfully!");
     } else {
-      toast({
-        title: "Error",
-        description: "No data found in the uploaded file",
-        variant: "destructive"
-      });
+      toast.error("No data found in the uploaded file");
     }
   };
 
-  // Example historical stock data for NVIDIA in 2025
+  const prepareChartData = () => {
+    if (!hasData || stockData.length === 0) {
+      return {
+        data: sampleData,
+        dateKey: 'Date',
+        numericKeys: ['High', 'Low', 'Open', 'Close', 'Volume', 'Adj Close']
+      };
+    }
+
+    const firstRow = stockData[0];
+    const keys = Object.keys(firstRow);
+    
+    const dateKey = keys.find(key => 
+      key.toLowerCase().includes('date') || 
+      key.toLowerCase().includes('time')
+    ) || keys[0];
+
+    const numericKeys = keys.filter(key => 
+      typeof firstRow[key] === 'number' || 
+      !isNaN(parseFloat(firstRow[key]))
+    );
+
+    return {
+      data: stockData,
+      dateKey,
+      numericKeys
+    };
+  };
+
   const sampleData = [
     { Date: "2024-12-20", "Adj Close": 134.6999969, Close: 134.6999969, High: 135.2799988, Low: 128.2200012, Open: 129.8099976, Volume: 306528600 },
     { Date: "2024-12-23", "Adj Close": 139.6699982, Close: 139.6699982, High: 139.7899933, Low: 135.1199951, Open: 136.2799988, Volume: 176053500 },
@@ -53,30 +77,13 @@ const Dashboard = () => {
     { Date: "2025-01-03", "Adj Close": 144.4700012, Close: 144.4700012, High: 144.8999939, Low: 139.7299957, Open: 140.0099945, Volume: 229322500 },
     { Date: "2025-01-06", "Adj Close": 149.4299927, Close: 149.4299927, High: 152.1600037, Low: 147.8200073, Open: 148.5899963, Volume: 265377400 }
   ];
-  
+
   const samplePortfolio = [
     { name: 'High', value: 152.16 },
     { name: 'Low', value: 128.22 },
     { name: 'Open', value: 129.81 },
     { name: 'Close', value: 149.43 }
   ];
-
-  const stockContext = {
-    symbol: 'NVDA',
-    company: 'NVIDIA Corporation',
-    timeframe: '2024-2025',
-    description: 'Sample stock performance data for NVIDIA showing price and volume trends'
-  };
-
-  const prepareChartData = () => {
-    const dataToUse = hasData && stockData.length > 0 ? stockData : sampleData;
-    
-    return {
-      data: dataToUse,
-      dateKey: 'Date',
-      numericKeys: ['High', 'Low', 'Open', 'Close', 'Volume', 'Adj Close']
-    };
-  };
 
   const { data, dateKey, numericKeys } = prepareChartData();
 
@@ -102,11 +109,10 @@ const Dashboard = () => {
         }));
       }
     }
-    
     return samplePortfolio;
   };
 
-  const portfolioData = hasData && stockData.length > 0 ? getPortfolioData() : samplePortfolio;
+  const portfolioData = getPortfolioData();
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -117,16 +123,14 @@ const Dashboard = () => {
         
         <main className="p-4 md:p-6">
           <div className="grid grid-cols-1 gap-4 md:gap-6">
-            {!hasData && (
-              <div className="col-span-full">
-                <FileUpload onDataLoaded={handleDataLoaded} />
-              </div>
-            )}
+            <div className="col-span-full">
+              <FileUpload onDataLoaded={handleDataLoaded} />
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <StatsCard 
                 title="Total Value" 
-                value="$24,567" 
+                value={hasData ? `$${(parseFloat(data[data.length - 1]?.Close || "0")).toLocaleString()}` : "$24,567"}
                 change={2.5} 
                 icon={<DollarSign className="h-4 w-4" />} 
               />
@@ -138,7 +142,7 @@ const Dashboard = () => {
               />
               <StatsCard 
                 title="Volume" 
-                value="1.45M" 
+                value={hasData ? `${(parseInt(data[data.length - 1]?.Volume || "0") / 1000000).toFixed(2)}M` : "1.45M"}
                 change={-3.2} 
                 icon={<BarChart2 className="h-4 w-4" />} 
               />
@@ -161,7 +165,7 @@ const Dashboard = () => {
                 data={data} 
                 title="Volume Analysis" 
                 xKey={dateKey} 
-                barKeys={[numericKeys[1] || 'volume']} 
+                barKeys={[numericKeys.find(key => key.toLowerCase().includes('volume')) || numericKeys[1]]} 
               />
             </div>
             
