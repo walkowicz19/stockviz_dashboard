@@ -15,26 +15,37 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+  const validateFileType = (file: File): boolean => {
+    const allowedTypes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    if (!allowedTypes.includes(file.type) && 
+        !file.name.endsWith('.csv') && 
+        !file.name.endsWith('.xlsx') && 
+        !file.name.endsWith('.xls')) {
+      toast.error('Please upload only CSV or Excel files');
+      return false;
+    }
+    return true;
+  };
 
   const processFile = useCallback((file: File) => {
+    if (!validateFileType(file)) return;
+
     setIsLoading(true);
     setFileName(file.name);
+    console.log('Processing file:', file.name, 'type:', file.type);
     
-    const fileType = file.name.split('.').pop()?.toLowerCase();
-    
-    if (fileType === 'csv') {
+    if (file.name.endsWith('.csv')) {
       Papa.parse(file, {
         header: true,
         complete: (results) => {
+          console.log('CSV parsing complete:', results);
           setIsLoading(false);
+          
           if (results.data && results.data.length > 0) {
             const validData = results.data.filter(row => 
               Object.keys(row).length > 1 && 
@@ -42,31 +53,29 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
             );
             
             if (validData.length > 0) {
-              console.log("CSV data loaded:", validData[0]);
               onDataLoaded(validData);
-              toast.success('CSV data loaded successfully');
+              toast.success(`Successfully loaded ${validData.length} rows of data`);
             } else {
-              toast.error('Error parsing CSV: No valid data found');
+              toast.error('No valid data found in the CSV file');
             }
           } else {
-            toast.error('Error parsing CSV: No data found');
+            toast.error('Error: The CSV file appears to be empty');
           }
         },
         error: (error) => {
+          console.error('CSV parsing error:', error);
           setIsLoading(false);
           toast.error(`Error parsing CSV: ${error.message}`);
-          console.error("CSV parse error:", error);
         }
       });
-    } else if (fileType === 'xlsx' || fileType === 'xls') {
+    } else if (file.name.match(/\.(xlsx|xls)$/i)) {
       const reader = new FileReader();
+      
       reader.onload = (e) => {
         try {
           const data = e.target?.result;
           if (!data) {
-            setIsLoading(false);
-            toast.error('Error reading Excel file: No data found');
-            return;
+            throw new Error('No data found in the Excel file');
           }
           
           const workbook = XLSX.read(data, { type: 'binary' });
@@ -74,30 +83,28 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          setIsLoading(false);
+          console.log('Excel parsing complete:', jsonData);
+          
           if (jsonData && jsonData.length > 0) {
-            console.log("Excel data loaded:", jsonData[0]);
             onDataLoaded(jsonData);
-            toast.success('Excel data loaded successfully');
+            toast.success(`Successfully loaded ${jsonData.length} rows of data`);
           } else {
-            toast.error('Error parsing Excel: No data found');
+            toast.error('No valid data found in the Excel file');
           }
         } catch (error) {
+          console.error('Excel parsing error:', error);
+          toast.error(`Error parsing Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
           setIsLoading(false);
-          console.error("Excel parse error:", error);
-          toast.error(`Error parsing Excel: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
       
       reader.onerror = () => {
         setIsLoading(false);
-        toast.error('Error reading the file');
+        toast.error('Error reading the Excel file');
       };
       
       reader.readAsBinaryString(file);
-    } else {
-      setIsLoading(false);
-      toast.error('Unsupported file format. Please upload a CSV or Excel file.');
     }
   }, [onDataLoaded]);
 
@@ -105,15 +112,15 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
     e.preventDefault();
     setIsDragging(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
+    const file = e.dataTransfer.files[0];
+    if (file) {
       processFile(file);
     }
   }, [processFile]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
       processFile(file);
     }
   }, [processFile]);
@@ -123,8 +130,11 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       className={`w-full p-6 rounded-xl border-2 border-dashed transition-colors ${
         isDragging ? 'bg-blue-50 border-blue-400' : 'border-gray-300'
       }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
       <div className="flex flex-col items-center justify-center gap-2 text-center">
@@ -141,7 +151,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           )}
         </div>
         
-        <div className="mt-2 flex gap-2">
+        <div className="mt-2">
           <label htmlFor="file-upload">
             <Button 
               variant="outline" 
