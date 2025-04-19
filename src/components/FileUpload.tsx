@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload, FileUp } from "lucide-react";
 import { toast } from '@/components/ui/sonner';
@@ -13,17 +13,19 @@ interface FileUploadProps {
 const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
-  };
+  }, []);
 
-  const handleDragLeave = () => {
+  const handleDragLeave = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  const processFile = (file: File) => {
+  const processFile = useCallback((file: File) => {
+    setIsLoading(true);
     setFileName(file.name);
     
     const fileType = file.name.split('.').pop()?.toLowerCase();
@@ -32,15 +34,28 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       Papa.parse(file, {
         header: true,
         complete: (results) => {
+          setIsLoading(false);
           if (results.data && results.data.length > 0) {
-            onDataLoaded(results.data);
-            toast.success('CSV data loaded successfully');
+            const validData = results.data.filter(row => 
+              Object.keys(row).length > 1 && 
+              !Object.values(row).every(val => val === '')
+            );
+            
+            if (validData.length > 0) {
+              console.log("CSV data loaded:", validData[0]);
+              onDataLoaded(validData);
+              toast.success('CSV data loaded successfully');
+            } else {
+              toast.error('Error parsing CSV: No valid data found');
+            }
           } else {
             toast.error('Error parsing CSV: No data found');
           }
         },
         error: (error) => {
+          setIsLoading(false);
           toast.error(`Error parsing CSV: ${error.message}`);
+          console.error("CSV parse error:", error);
         }
       });
     } else if (fileType === 'xlsx' || fileType === 'xls') {
@@ -48,28 +63,45 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       reader.onload = (e) => {
         try {
           const data = e.target?.result;
+          if (!data) {
+            setIsLoading(false);
+            toast.error('Error reading Excel file: No data found');
+            return;
+          }
+          
           const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
+          setIsLoading(false);
           if (jsonData && jsonData.length > 0) {
+            console.log("Excel data loaded:", jsonData[0]);
             onDataLoaded(jsonData);
             toast.success('Excel data loaded successfully');
           } else {
             toast.error('Error parsing Excel: No data found');
           }
         } catch (error) {
+          setIsLoading(false);
+          console.error("Excel parse error:", error);
           toast.error(`Error parsing Excel: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
+      
+      reader.onerror = () => {
+        setIsLoading(false);
+        toast.error('Error reading the file');
+      };
+      
       reader.readAsBinaryString(file);
     } else {
+      setIsLoading(false);
       toast.error('Unsupported file format. Please upload a CSV or Excel file.');
     }
-  };
+  }, [onDataLoaded]);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     
@@ -77,14 +109,14 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       const file = e.dataTransfer.files[0];
       processFile(file);
     }
-  };
+  }, [processFile]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       processFile(file);
     }
-  };
+  }, [processFile]);
 
   return (
     <div 
@@ -100,7 +132,9 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
         
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">Upload Stock Data</h3>
-          {fileName ? (
+          {isLoading ? (
+            <p className="text-sm text-amber-600 font-medium">Processing file...</p>
+          ) : fileName ? (
             <p className="text-sm text-blue-600 font-medium">{fileName}</p>
           ) : (
             <p className="text-sm text-gray-500">Drag & drop your CSV or Excel file here</p>
@@ -109,9 +143,13 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
         
         <div className="mt-2 flex gap-2">
           <label htmlFor="file-upload">
-            <Button variant="outline" className="cursor-pointer bg-blue-gradient text-white hover:bg-blue-700 flex gap-2">
+            <Button 
+              variant="outline" 
+              className={`cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex gap-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isLoading}
+            >
               <FileUp className="h-4 w-4" />
-              Browse Files
+              {isLoading ? 'Processing...' : 'Browse Files'}
             </Button>
             <input
               id="file-upload"
@@ -119,6 +157,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               className="hidden"
               accept=".csv,.xlsx,.xls"
               onChange={handleFileChange}
+              disabled={isLoading}
             />
           </label>
         </div>
