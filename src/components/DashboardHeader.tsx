@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, Menu, MessageSquare, Pencil } from 'lucide-react';
@@ -12,7 +13,7 @@ const DashboardHeader = ({
   onToggleSidebar
 }: DashboardHeaderProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("NVIDIA");
+  const [name, setName] = useState("");
 
   const handleNameChange = (e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
     const newName = (e.target as HTMLInputElement).value;
@@ -29,7 +30,7 @@ const DashboardHeader = ({
         <div className="flex items-center gap-2">
           <div className="rounded-md bg-blue-500 p-1">
             <div className="h-6 w-6 text-white font-semibold flex items-center justify-center">
-              {name.charAt(0).toUpperCase()}
+              {name ? name.charAt(0).toUpperCase() : 'N'}
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -47,7 +48,7 @@ const DashboardHeader = ({
               />
             ) : (
               <h1 className="text-lg font-semibold flex items-center gap-2">
-                {name} Stock Data 2025
+                {name || "NVIDIA"}
                 <Button 
                   variant="ghost" 
                   size="icon" 
